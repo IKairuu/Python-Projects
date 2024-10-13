@@ -5,12 +5,12 @@ import datetime
 
 os.chdir("C:\\Users\\aband\\Downloads\\vsCode\\Python Projects\\Task Manager Project")
 
-class background_process:
+class background_process():
     def __init__(self):
         self.currentTime = datetime.datetime.now()
         self.dueTasks = []
         
-    def read_files():
+    def read_files(self):
         with open("dayTask.txt", "r") as dayFile, open("markTask.txt", "r") as markFile, open("monthTask.txt", "r") as monthFile, \
             open("nameTask.txt", "r") as nameFile, open("yearTask.txt", "r") as yearFile, open("checkList.txt", "r") as checkFile:
                 listDay = [day.replace("\n", "") for day in dayFile]
@@ -20,7 +20,7 @@ class background_process:
                 listYear = [year.replace("\n", "") for year in yearFile]
                 listCheck = [check.replace("\n", "") for check in checkFile]
         return listDay, listMark, listMonth, listName, listYear, listCheck
-    def save_files(listDay, listMark, listMonth, listName, listYear, listCheck):
+    def save_files(self, listDay, listMark, listMonth, listName, listYear, listCheck):
         index = 0
         with open("dayTask.txt", "w") as dayFile, open("markTask.txt", "w") as markFile, open("monthTask.txt", "w") as monthFile, \
             open("nameTask.txt", "w") as nameFile, open("yearTask.txt", "w") as yearFile, open("checkList.txt", "w") as checkFile:
@@ -32,13 +32,13 @@ class background_process:
                     yearFile.write(str(listYear[index]) + "\n")
                     checkFile.write(str(listCheck[index]) + "\n")
                     index += 1
-    def save_check():
+    def save_check(self):
         with open("checkList.txt", "w") as checkFile, open("markTask.txt", "w") as markFile:
            for index, x in enumerate(listMark):
                checkFile.write(str(listCheck[index]) + "\n")
                markFile.write(listMark[index] + "\n")
                
-    def create_dictionary():
+    def create_dictionary(self):
         dictionary = {}
         for index, name in enumerate(listName):
             dictionary.update({name : int(listCheck[index])})
@@ -142,18 +142,23 @@ class user_interface(background_process):
         gui.confirm.grid(padx=10, pady=10,row=5, column=1, sticky=tk.W+tk.E)
         
     def check_input(gui):
-        if len(gui.nameLabel.get()) > 10 or len(gui.nameLabel.get()) <= 0:
-            messagebox.showerror(title="Input Error", message="Maximum of 10 characters")
-        elif gui.nameLabel.get() in dictionary:
-            messagebox.showerror(title="Task Name", message="Task Name already exist")
-        elif int(gui.dayLabel.get()) > 30 or int(gui.dayLabel.get()) <= 0:
-            messagebox.showerror(title="Input Error", message="Incorrect Input\nInput 1-30 days")
-        elif int(gui.monthLabel.get()) > 12 or int(gui.monthLabel.get()) <= 0:
-            messagebox.showerror(title="Input Error", message="Incorrect Input\nInput 1-12 month")
-        elif len(gui.yearLabel.get()) != 4:
-            messagebox.showerror(title="Input Error", message="Incorrect Year Input")
-        else:
-            gui.save_task()
+        try:
+            if len(listName) > 10:
+                messagebox.showerror(title="Error", message="Task limit reached")
+            elif len(gui.nameLabel.get()) > 10 or len(gui.nameLabel.get()) <= 0:
+                messagebox.showerror(title="Input Error", message="Maximum of 10 characters")
+            elif gui.nameLabel.get() in dictionary:
+                messagebox.showerror(title="Task Name", message="Task Name already exist")
+            elif int(gui.dayLabel.get()) > 30 or int(gui.dayLabel.get()) <= 0:
+                messagebox.showerror(title="Input Error", message="Incorrect Input\nInput 1-30 days")
+            elif int(gui.monthLabel.get()) > 12 or int(gui.monthLabel.get()) <= 0:
+                messagebox.showerror(title="Input Error", message="Incorrect Input\nInput 1-12 month")
+            elif len(gui.yearLabel.get()) != 4:
+                messagebox.showerror(title="Input Error", message="Incorrect Year Input")
+            else:
+                gui.save_task()
+        except:
+            messagebox.showerror(title="Inpur Error", message="Invalid Input")
         
     def view_task(gui):
         gui.addTask = False
@@ -186,10 +191,14 @@ class user_interface(background_process):
         gui.headerDueTask =tk.Label(gui.dueTaskFrame, text="DUE TASKS", font=("Arial bold", 10))
         gui.headerDueTask.pack()
         
-        gui.showTask = tk.Text(gui.dueTaskFrame, width=40, height=5)
+        gui.show_due_task_scroll = tk.Scrollbar(gui.dueTaskFrame, orient="vertical")
+        gui.show_due_task_scroll.pack(fill="y", side="right")
+        
+        gui.showTask = tk.Text(gui.dueTaskFrame, width=40, height=5, yscrollcommand=gui.show_due_task_scroll.set)
         gui.showTask.pack()
         for index, x in enumerate(gui.task_due):
             gui.showTask.insert(tk.END, f"{x['name']}\t\t{x['day']}/{x['month']}/{x['year']}\t\t{x['mark']}\n") 
+        gui.show_due_task_scroll.config(command=gui.showTask.yview)
         
     def view_task_main(gui):
         gui.view_task()
@@ -242,8 +251,21 @@ class user_interface(background_process):
         gui.deleteButtons = tk.Frame(gui.root)
         gui.deleteButtons.pack()
         
-        gui.buttonBack = tk.Button(gui.deleteButtons, text="BACK", height=2, width=20, command=gui.destroy_frame).grid(row=2,column=0, sticky=tk.W)
-        gui.buttonDelete = tk.Button(gui.deleteButtons, text="DELETE", height=2, width=20, command=gui.initial_delete_task).grid(row=2,column=1, sticky=tk.E)
+        gui.buttonBack = tk.Button(gui.deleteButtons, text="BACK", height=2, width=15, command=gui.destroy_frame).grid(row=2,column=0, sticky=tk.W)
+        gui.buttonDelete = tk.Button(gui.deleteButtons, text="DELETE", height=2, width=15, command=gui.initial_delete_task).grid(row=2,column=1)
+        gui.buttonDeleteAll = tk.Button(gui.deleteButtons, text="DELETE ALL", height=2, width=15, command=gui.clear_all_tasks).grid(row=2,column=2, sticky=tk.E)
+    
+    def clear_all_tasks(gui):
+        gui.process = background_process()
+        listDay.clear()
+        listMark.clear()
+        listMonth.clear()
+        listName.clear()
+        listYear.clear()
+        listCheck.clear()
+        dictionary.clear() #possible to be shortened
+        gui.process.save_files(listDay, listMark, listMonth, listName, listYear, listCheck)
+        gui.destroy_frame()
     
     def initial_delete_task(gui):
         gui.addTask = False
@@ -268,7 +290,6 @@ class user_interface(background_process):
         gui.back_button = tk.Button(gui.button_frame, text="BACK", font=("Arial", 10), command=gui.destroy_frame, height=2, width=20).grid(row=0, column=0, sticky=tk.W)
         gui.delete_button = tk.Button(gui.button_frame, text="DELETE", font=("Arial", 10), command=lambda:gui.empty_list(gui.deletedTasks), height=2, width=20).grid(row=0, column=1, sticky=tk.E)
         
-        
     def empty_list(gui, deletedTasks):
         for x in deletedTasks:
             index = 0
@@ -286,7 +307,7 @@ class user_interface(background_process):
                 del listCheck[index]
         gui.process = background_process()
         gui.dueTasks = gui.process.due_tasks() #PROBLEM
-        background_process.save_files(listDay, listMark, listMonth, listName, listYear,  listCheck)
+        gui.process.save_files(listDay, listMark, listMonth, listName, listYear,  listCheck)
         gui.destroy_frame()
                      
     def initial_check_task(gui, boxes):
@@ -301,7 +322,7 @@ class user_interface(background_process):
                 listMark[index] = "Undone"
         gui.process  = background_process()
         gui.task_due = gui.process.due_tasks()
-        background_process.save_check()
+        gui.process.save_check()
         gui.destroy_frame()
         
     def check_task(gui):
@@ -338,6 +359,7 @@ class user_interface(background_process):
             gui.delete_task()
         
     def save_task(gui):
+        gui.process = background_process()
         listName.append(gui.nameLabel.get())
         listDay.append(gui.dayLabel.get())
         listMonth.append(gui.monthLabel.get())
@@ -345,11 +367,11 @@ class user_interface(background_process):
         listMark.append("Undone")
         listCheck.append(0)
         dictionary.update({gui.nameLabel.get(): 0})
-        background_process.save_files(listDay, listMark, listMonth, listName, listYear, listCheck)
+        gui.process.save_files(listDay, listMark, listMonth, listName, listYear, listCheck)
         gui.destroy_frame()
-        
-listDay, listMark, listMonth, listName, listYear, listCheck = background_process.read_files() # STRING VARIABLES
-dictionary = background_process.create_dictionary()
-process = background_process()
+
+process = background_process()  
+listDay, listMark, listMonth, listName, listYear, listCheck = process.read_files() # STRING VARIABLES
+dictionary = process.create_dictionary()
 process.due_tasks()
 user_interface()
