@@ -35,6 +35,7 @@ class Background_Process:
     def create_dictionary(self):
         for index, name in enumerate(self.listName):
             self.process.dictionary.update({name : int(self.listCheck[index])})
+        return self.dictionary
             
     def due_tasks(self):
         if len(self.process.dueTasks) != 0:
