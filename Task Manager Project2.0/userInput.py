@@ -9,6 +9,7 @@ class User_Input(Background_Process):
         gui.root.title("Task Manager")
         gui.root.geometry("400x400")
         gui.root.resizable(width=False, height=False)
+        gui.dictionary = gui.process.create_dictionary()
         gui.addTask = False
         gui.viewTask = False
         gui.deleteTask = False
